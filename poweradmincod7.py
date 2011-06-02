@@ -55,9 +55,9 @@ class Poweradmincod7Plugin(b3.plugin.Plugin):
                   'mp_discovery' : 'Discovery',
                   'mp_kowloon' : 'Kowloon',
                   'mp_stadium' : 'Stadium',
-                  'mp_convoy' : 'Convoy',
+                  'mp_gridlock' : 'Convoy',
                   'mp_hotel' : 'Hotel',
-                  'mp_stockpile' : 'Stockpile',
+                  'mp_outskirts' : 'Stockpile',
                   'mp_zoo' : 'Zoo'
                 }
 
