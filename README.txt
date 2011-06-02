@@ -35,8 +35,10 @@ Unranked servers only:
 Changelog
 ---------
 
- * 19.04.2011 - v1.0 - Freelander
+ * 19.04.2011 - v1.0
     - Initial release
+ * 02.06.2011 - v1.1
+    - DLC2 maps added
  
 Installation
 ------------
