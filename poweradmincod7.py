@@ -1,6 +1,6 @@
 #
 # PowerAdmin Plugin for BigBrotherBot(B3) (www.bigbrotherbot.com)
-# Copyright (C) 2011 Freelander - www.fps-gamer.net
+# Copyright (C) 2005 www.xlr8or.com
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,10 +17,13 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 # Changelog:
-# * 19.04.2011 - 1.0 - Initial release
+# * 10.04.2011 - 1.0
+#   - Initial release
+# * 02.06.2011 - 1.1
+#   - DLC2 Changes
 #
 
-__version__ = '1.0'
+__version__ = '1.1'
 __author__  = 'Freelander'
 
 import b3, re
@@ -51,7 +54,11 @@ class Poweradmincod7Plugin(b3.plugin.Plugin):
                   'mp_berlinwall2' : 'Berlin Wall',
                   'mp_discovery' : 'Discovery',
                   'mp_kowloon' : 'Kowloon',
-                  'mp_stadium' : 'Stadium'
+                  'mp_stadium' : 'Stadium',
+                  'mp_convoy' : 'Convoy',
+                  'mp_hotel' : 'Hotel',
+                  'mp_stockpile' : 'Stockpile',
+                  'mp_zoo' : 'Zoo'
                 }
 
     _playlists = {
