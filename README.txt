@@ -57,6 +57,8 @@ Installation
  * edit plugin_poweradmincod7.xml with your preferred settings
  * update your main b3 config file with :
    <plugin name="poweradmincod7" config="@b3/extplugins/conf/plugin_poweradmincod7.xml"/>
+ * To load and list config files, you need to add these files with .cfg extension into your 
+   b3/conf folder.
 
 Notes
 -----
