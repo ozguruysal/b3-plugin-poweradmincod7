@@ -1,6 +1,6 @@
 #
-# PowerAdmin Plugin for BigBrotherBot(B3) (www.bigbrotherbot.com)
-# Copyright (C) 2005 www.xlr8or.com
+# PowerAdmin Plugin for BigBrotherBot(B3) (www.bigbrotherbot.net)
+# Copyright (C) 2011 Freelander - www.fps-gamer.net
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,15 +20,25 @@
 # * 10.04.2011 - 1.0
 #   - Initial release
 # * 02.06.2011 - 1.1
-#   - DLC2 Changes
+#   - DLC2 maps added
+# * 09.06.2011 - 1.2
+#   - !pasetmap (!setmap) command now works both with console map names and easy map names
+#     as well as console map name without "mp_" at the beginning. (as printed out
+#     by !maps command)
+# * - Added new commands !pasetdlc, !palistcfg and !paloadcfg
 #
 
-__version__ = '1.1'
+__version__ = '1.2'
 __author__  = 'Freelander'
 
 import b3, re
 import b3.events
 import time
+import b3.plugin
+import os
+import threading
+import time
+import string
 
 class Poweradmincod7Plugin(b3.plugin.Plugin):
     _adminPlugin = None
@@ -37,28 +47,28 @@ class Poweradmincod7Plugin(b3.plugin.Plugin):
     _isplaylist_enabled = True
     _admin_excluded_maps = None
     _cod7maps = { 
-                  'mp_array' : 'Array',
-                  'mp_cracked' : 'Cracked',
-                  'mp_crisis' : 'Crisis',
-                  'mp_firingrange' : 'Firing Range',
-                  'mp_duga' : 'Grid',
-                  'mp_hanoi' : 'Hanoi',
-                  'mp_cairo' : 'Havana',
-                  'mp_havoc' : 'Jungle',
-                  'mp_cosmodrome' : 'Launch',
-                  'mp_nuked' : 'Nuketown',
-                  'mp_radiation' : 'Radiation',
-                  'mp_mountain' : 'Summit',
-                  'mp_villa' : 'Villa',
-                  'mp_russianbase' : 'WMD',
-                  'mp_berlinwall2' : 'Berlin Wall',
-                  'mp_discovery' : 'Discovery',
-                  'mp_kowloon' : 'Kowloon',
-                  'mp_stadium' : 'Stadium',
-                  'mp_gridlock' : 'Convoy',
-                  'mp_hotel' : 'Hotel',
-                  'mp_outskirts' : 'Stockpile',
-                  'mp_zoo' : 'Zoo'
+                  'mp_array' : 'array',
+                  'mp_cracked' : 'cracked',
+                  'mp_crisis' : 'crisis',
+                  'mp_firingrange' : 'firing range',
+                  'mp_duga' : 'grid',
+                  'mp_hanoi' : 'hanoi',
+                  'mp_cairo' : 'havana',
+                  'mp_havoc' : 'jungle',
+                  'mp_cosmodrome' : 'launch',
+                  'mp_nuked' : 'nuketown',
+                  'mp_radiation' : 'radiation',
+                  'mp_mountain' : 'summit',
+                  'mp_villa' : 'villa',
+                  'mp_russianbase' : 'wmd',
+                  'mp_berlinwall2' : 'berlin wall',
+                  'mp_discovery' : 'discovery',
+                  'mp_kowloon' : 'kowloon',
+                  'mp_stadium' : 'stadium',
+                  'mp_gridlock' : 'convoy',
+                  'mp_hotel' : 'hotel',
+                  'mp_outskirts' : 'stockpile',
+                  'mp_zoo' : 'zoo'
                 }
 
     _playlists = {
@@ -222,24 +232,28 @@ class Poweradmincod7Plugin(b3.plugin.Plugin):
             client.message('missing parameter, try !help pasetmap')
             return False
         else:
-            data = data.split(' ')
-            mapname = data[0].lower()
-            if mapname.startswith('mp_'):
-                mapname = mapname
+            self.debug('Requested map for next round is %s' % data)
+            data = data.lower()
+
+            if data in self._cod7maps.keys():
+                mapname = data
+                self.debug('%s is a console mapname' % data)
+            elif ('mp_%s' % data) in self._cod7maps.keys():
+                mapname = ('mp_%s' % data)
+                self.debug('%s is considered to be %s' % (data, mapname))
+            elif data in self._cod7maps.values():
+                cod7maps_inverse = dict((self._cod7maps[k], k) for k in self._cod7maps)
+                mapname = cod7maps_inverse[data]
+                self.debug('%s is an easy mapname, console name is %s' % (data, mapname))
             else:
-                mapname = ('mp_%s' % mapname)
-
-            self.debug('Requested map for next round is %s' % mapname)
-
-            if mapname not in self._cod7maps:
-                client.message('%s is not a stock CoD7 map, please check your spelling and try again!' % mapname)
+                client.message('%s is not a stock CoD7 map, please check your spelling and try again!' % data)
                 return False
-            else:
-                excludeMaps = self._cod7maps.keys()
-                excludeMaps.remove(mapname)
-                self.console.write('setadmindvar playlist_excludeMap "%s"' % ' '.join(excludeMaps), maxRetries=5)
-                client.message('Setting map ^3%s for next round' % self._cod7maps[mapname])
-                self._issetmap = True
+
+            excludeMaps = self._cod7maps.keys()
+            excludeMaps.remove(mapname)
+            self.console.write('setadmindvar playlist_excludeMap "%s"' % ' '.join(excludeMaps), maxRetries=5)
+            client.message('Setting map ^3%s for next round' % self._cod7maps[mapname].title())
+            self._issetmap = True
 
     def cmd_paexcludemaps(self, data, client, cmd=None):
         '''\
@@ -403,7 +417,88 @@ class Poweradmincod7Plugin(b3.plugin.Plugin):
             time.sleep(5)
             self.console.write('map_restart', maxRetries=5)
 
+    def cmd_pasetdlc(self, data, client, cmd):
+        '''\
+        <dlc number> <on | off> - Turn given DLC mappack on or off. Example: !pasetdlc 1 off.
+        (You can safely use the command without the 'pa' at the beginning)
+        '''
+        if not data:
+            client.message('Missing parameter, try !help pasetdlc')
+            return False
+        else:
+            data = data.split(' ')
+            if len(data) < 2:
+                client.message('Missing parameter, try !help pasetdlc')
+                return False
+
+            if data[0].isdigit() == False:
+                client.message('Invalid DLC number!')
+                return False
+            else:
+                data[0] = int(data[0])
+                #Treyarch is counting DLC numbers starting from 2
+                dlcnumber = data[0] + 1
+
+            if data[1].lower() in ('on', 'off'):
+                if data[1].lower() == 'off':
+                    self.console.write('setadmindvar playlist_excludeDlc%s "1"' % dlcnumber, maxRetries=5)
+                    client.message('DLC%s Mappack is OFF' % data[0])
+                if data[1].lower() == 'on':
+                    self.console.write('setadmindvar playlist_excludeDlc%s "0"' % dlcnumber, maxRetries=5)
+                    client.message('DLC%s Mappack is ON' % data[0])
+            else:
+                print("Invalid data, expecting 'on' or 'off'")
+                return False
+
+    def cmd_palistcfg(self, data, client, cmd):
+        '''\
+        List available server config files in b3 conf folder
+        (You can safely use the command without the 'pa' at the beginning)
+        '''
+        config_files = []
+        filenames = os.listdir(b3.getConfPath())
+        for filename in filenames:
+            if filename.endswith('.cfg'):
+                config_files.append(filename)
+
+        if not config_files:
+            client.message('No server config files found')
+            return False
+        else:
+            client.message('^3Available config files are:^7 %s' % string.join(config_files, ', '))
+
+    def cmd_paload(self, data, client, cmd=None):
+        '''\
+        <configfile.cfg> - Load a server configfile.
+        (You can safely use the command without the 'pa' at the beginning)
+        '''
+        if not data:
+            client.message('^7Invalid or missing data, try !help paload')
+            return False
+        if not data.endswith('.cfg'):
+            client.message('%s is not a valid server config file!' % data)
+            return False
+        else:
+            if not os.path.isfile(os.path.join(b3.getConfPath(), data)):
+                client.message("Cannot find file %s in B3 config folder" % data)
+            else:
+                self.info("Config loader thread is starting")
+                client.message("^1Loading %s. This may take a while depending on the file size, please wait..." % data)
+                thread_configloader = threading.Thread(target=self._configloader(data))
+                thread_configloader.start()
+                client.message("^1%s successfully loaded!" % data)
+
     #---------------------------------------------------------------------------------
+
+    def _configloader(self, configfile):
+        '''\
+        Process each line of a config file
+        '''
+        with open(os.path.join(b3.getConfPath(), configfile), 'r') as f:
+            for line in f:
+                if not line.startswith('//') and not line.startswith('\r\n'):
+                    self.console.write(line, maxRetries=5)
+                    time.sleep(1)
 
     def isranked(self):
         '''\
@@ -432,3 +527,57 @@ class Poweradmincod7Plugin(b3.plugin.Plugin):
             else:
                 self.debug('Playlist Disabled')
                 return False
+
+#-------------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+    from b3.fake import fakeConsole
+    from b3.fake import superadmin
+    from b3.config import XmlConfigParser
+
+    conf = XmlConfigParser()
+    conf.loadFromString('''
+        <configuration plugin="poweradmincod7">
+            <settings name="commands">
+                <!--
+                Following command works on RANKED servers only
+                -->
+                <set name="pasetmap-setmap">40</set>
+                <!--
+                Following commands work both on RANKED and UNRANKED servers
+                -->
+                <set name="paplaylist-playlist">40</set>
+                <set name="pagetplaylists-getplaylists">100</set>
+                <set name="pasetplaylist-setplaylist">100</set>
+                <set name="paexcludemaps-excludemaps">100</set>
+                <set name="paversion">1</set>
+                <set name="paident-id">40</set>
+                <set name="paset">100</set>
+                <set name="paget">100</set>
+                <set name="pasetdlc-setdlc">100</set>
+                <set name="paload-load">100</set>
+                <set name="palistcfg-listcfg">100</set>
+                <!--
+                Following commands work on UNRANKED servers only
+                -->
+               <set name="pafastrestart-fastrestart">40</set>
+               <set name="pamaprestart-maprestart">40</set>
+               <set name="pagametype-gametype">40</set>
+            </settings>
+        </configuration>
+    ''')
+
+    p = Poweradmincod7Plugin(fakeConsole, conf)
+    p.onStartup()
+    p._isranked = True
+
+    superadmin.connects(cid=1)
+
+    superadmin.says("!listcfg")
+    print "-------------------------"
+
+    superadmin.says("!load test.cfg")
+    print "-------------------------"
+
+    superadmin.says("!setdlc 2 off")
+    print "-------------------------"

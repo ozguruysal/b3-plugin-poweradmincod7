@@ -15,6 +15,9 @@
 		<set name="paident-id">40</set>
 		<set name="paset">100</set>
 		<set name="paget">100</set>
+		<set name="palistcfg-listcfg">100</set>
+		<set name="pasetdlc-setdlc">100</set>
+		<set name="paload-load">100</set>
 		<!--
 		Following commands work on UNRANKED servers only
 		-->
