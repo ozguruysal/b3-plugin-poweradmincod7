@@ -42,7 +42,7 @@ Changelog
     - Initial release
  * 02.06.2011 - v1.1
     - DLC2 maps added
- * 09.06.2011 - 1.2
+ * 09.06.2011 - v1.2
     - !pasetmap (!setmap) command now works both with console map names and easy map names
       as well as console map name without "mp_" at the beginning. (as printed out
       by !maps command)
