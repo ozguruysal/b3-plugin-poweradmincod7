@@ -46,7 +46,7 @@ Changelog
     - !pasetmap (!setmap) command now works both with console map names and easy map names
       as well as console map name without "mp_" at the beginning. (as printed out
       by !maps command)
-    - Added new commands !pasetdlc, !palistcfg and !paloadcfg
+    - Added new commands !pasetdlc, !palistcfg and !paload
 
 
 Installation
