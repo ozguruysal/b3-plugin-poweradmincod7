@@ -25,10 +25,12 @@
 #   - !pasetmap (!setmap) command now works both with console map names and easy map names
 #     as well as console map name without "mp_" at the beginning. (as printed out
 #     by !maps command)
-# * - Added new commands !pasetdlc, !palistcfg and !paload
+#   - Added new commands !pasetdlc, !palistcfg and !paload
+# * 28.07.2011 - 1.3
+#   - DLC3 maps added
 #
 
-__version__ = '1.2'
+__version__ = '1.3'
 __author__  = 'Freelander'
 
 import b3, re
@@ -68,7 +70,11 @@ class Poweradmincod7Plugin(b3.plugin.Plugin):
                   'mp_gridlock' : 'convoy',
                   'mp_hotel' : 'hotel',
                   'mp_outskirts' : 'stockpile',
-                  'mp_zoo' : 'zoo'
+                  'mp_zoo' : 'zoo',
+                  'mp_area51' : 'hangar 18',
+                  'mp_drivein' : 'drive-in',
+                  'mp_silo' : 'silo',
+                  'mp_golfcourse' : 'hazard'
                 }
 
     _playlists = {

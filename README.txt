@@ -47,6 +47,8 @@ Changelog
       as well as console map name without "mp_" at the beginning. (as printed out
       by !maps command)
     - Added new commands !pasetdlc, !palistcfg and !paload
+ * 28.07.2011 - 1.3
+   - DLC3 maps added
 
 
 Installation
